@@ -4,9 +4,12 @@
 #include <ros/ros.h>
 #include <apriltag_ros/Apriltags.h>
 #include <sensor_msgs/CameraInfo.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Vector3.h>
+#include <geometry_msgs/TransformStamped.h>
 #include <image_geometry/pinhole_camera_model.h>
-#include <rviz_helper/visualizer.h>
 #include "apriltag_ros/visualizer.h"
+#include <tf2_ros/transform_broadcaster.h>
 
 #include "apriltag_ros/mapper.h"
 #include "apriltag_ros/tag_map.h"
@@ -21,14 +24,10 @@ class MapperNode {
         sub_cinfo_(nh_.subscribe("camera_info", 1, &MapperNode::CinfoCb, this)),
         frame_id_(frame_id),
         mapper_(0.04, 1),
-        pose_viz_(nh, "traj"),
         tag_viz_(nh, "apriltags_map") {
-    pose_viz_.set_color(kr::rviz_helper::colors::MAGENTA);
-    pose_viz_.set_alpha(1);
-    pose_viz_.set_scale(0.01);
-    tag_viz_.set_color(kr::rviz_helper::colors::GREEN);
-    tag_viz_.set_alpha(0.75);
-  }
+    		tag_viz_.SetColor(apriltag_ros::GREEN);
+    		tag_viz_.SetAlpha(0.75);
+  	}
 
   bool GetGoodTags(const std::vector<apriltag_ros::Apriltag> tags_c,
                    std::vector<apriltag_ros::Apriltag>* tags_c_good);
@@ -43,9 +42,10 @@ class MapperNode {
   std::string frame_id_;
   apriltag_ros::TagMap map_;
   apriltag_ros::Mapper mapper_;
-  kr::rviz_helper::PoseVisualizer pose_viz_;
   apriltag_ros::ApriltagVisualizer tag_viz_;
   image_geometry::PinholeCameraModel model_;
+  tf2_ros::TransformBroadcaster tf_broadcaster_;
+
 };
 
 }  // namespace apriltag_ros

@@ -11,13 +11,8 @@ void MapperNode::TagsCb(const apriltag_ros::ApriltagsConstPtr& tags_c_msg) {
   }
   // Do nothing if camera info not received
   if (!model_.initialized()) {
-    ROS_WARN_THROTTLE(1, "No cinfo received");
+    ROS_WARN_THROTTLE(1, "No camera info received");
     return;
-  }
-  // Set child frame id for tf to be the same as camera frame id
-  if (pose_viz_.child_frame_id().empty()) {
-    pose_viz_.set_child_frame_id(tags_c_msg->header.frame_id);
-    ROS_INFO("Set child frame id to: %s.", pose_viz_.child_frame_id().c_str());
   }
   // Do nothing if there are no good tags close to the center of the image
   std::vector<Apriltag> tags_c_good;
@@ -28,7 +23,7 @@ void MapperNode::TagsCb(const apriltag_ros::ApriltagsConstPtr& tags_c_msg) {
   // Initialize map by adding the first tag that is not on the edge of the image
   if (!map_.init()) {
     map_.AddFirstTag(tags_c_good.front());
-    ROS_INFO("TagMap initialized.");
+    ROS_INFO("AprilMap initialized.");
   }
   // Do nothing if no pose can be estimated
   geometry_msgs::Pose pose;
@@ -53,8 +48,26 @@ void MapperNode::TagsCb(const apriltag_ros::ApriltagsConstPtr& tags_c_msg) {
     // first landmark
     mapper_.Initialize(map_.first_tag());
   }
-  // Publish updated pose and map
-  pose_viz_.PublishPose(pose, frame_id_, tags_c_msg->header.stamp);
+
+  // Publish camera to world transform
+  std_msgs::Header header;
+  header.stamp = tags_c_msg->header.stamp;
+  header.frame_id = frame_id_;
+
+  geometry_msgs::Vector3 translation;
+  translation.x = pose.position.x;
+  translation.y = pose.position.y;
+  translation.z = pose.position.z;
+
+  geometry_msgs::TransformStamped transform_stamped;
+  transform_stamped.header = header;
+  transform_stamped.child_frame_id = tags_c_msg->header.frame_id;
+  transform_stamped.transform.translation = translation;
+  transform_stamped.transform.rotation = pose.orientation;
+
+  tf_broadcaster_.sendTransform(transform_stamped);
+
+  // Publish visualisation markers
   tag_viz_.PublishApriltagsMarker(map_.tags_w(), frame_id_,
                                   tags_c_msg->header.stamp);
 }

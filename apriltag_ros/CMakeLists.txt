@@ -6,10 +6,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(catkin REQUIRED COMPONENTS
     roscpp image_transport cv_bridge image_geometry
-    sensor_msgs geometry_msgs message_generation
-    apriltag_mit std_msgs rviz_helper
+    apriltag_mit std_msgs tf2_ros
     )
+
+find_package(cmake_modules)
 find_package(gtsam)
+find_package(Eigen)
 
 add_message_files(DIRECTORY msg FILES Apriltag.msg Apriltags.msg)
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
@@ -20,6 +22,7 @@ include_directories(
     include
     ${catkin_INCLUDE_DIRS}
     ${GTSAM_INCLUDE_DIRS}
+    ${Eigen_INCLUDE_DIRS}
     )
 
 # apriltag_ros library
@@ -58,15 +61,3 @@ add_dependencies(${PROJECT_NAME}
     ${PROJECT_NAME}_gencpp
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
     )
-
-# Map generator
-#add_executable(generate_map
-#src/generate_map.cpp
-#src/tag_yaml.cpp
-#)
-
-#target_link_libraries(generate_map
-#${catkin_LIBRARIES}
-#${OpenCV_LIBRARIES}
-#yaml-cpp
-#)

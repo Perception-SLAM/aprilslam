@@ -6,7 +6,6 @@ int main(int argc, char **argv) {
   ros::NodeHandle pnh("~");
 
   try {
-    // Hard code tag size now
     apriltag_ros::DetectorNode detector_node(nh, pnh);
     ros::spin();
   }

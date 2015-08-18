@@ -5,11 +5,17 @@
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <rviz/helpers/color.h>
-#include <rviz_helper/colors.h>
 #include <apriltag_ros/Apriltag.h>
 #include <apriltag_ros/Apriltags.h>
 
 namespace apriltag_ros {
+
+const rviz::Color RED = {1, 0, 0};
+const rviz::Color GREEN = {0, 1, 0};
+const rviz::Color BLUE = {0, 0, 1};
+const rviz::Color CYAN = {0, 1, 1};
+const rviz::Color MAGENTA = {1, 0, 1};
+const rviz::Color YELLOW = {1, 1, 0};
 
 class ApriltagVisualizer {
  public:
@@ -18,12 +24,12 @@ class ApriltagVisualizer {
         pub_markers_(nh_.advertise<visualization_msgs::MarkerArray>(topic, 1)) {
   }
 
-  void set_color(const rviz::Color& color) {
+  void SetColor(const rviz::Color& color) {
     color_.r = color.r_;
     color_.g = color.g_;
     color_.b = color.b_;
   }
-  void set_alpha(double alpha) { color_.a = alpha; }
+  void SetAlpha(double alpha) { color_.a = alpha; }
 
   void PublishApriltagsMarker(const apriltag_ros::Apriltags& apriltags);
   void PublishApriltagsMarker(const std::vector<apriltag_ros::Apriltag>& tags,

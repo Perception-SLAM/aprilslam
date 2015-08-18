@@ -22,20 +22,15 @@ DetectorNode::DetectorNode(const ros::NodeHandle &nh,
       sub_camera_(
           it_.subscribeCamera("image_raw", 1, &DetectorNode::CameraCb, this)),
       pub_tags_(nh_.advertise<apriltag_ros::Apriltags>("apriltags", 1)),
+      pub_detections_(nh_.advertise<sensor_msgs::Image>("detections", 1)),
       tag_detector_(AprilTags::tagCodes36h11),
       tag_viz_(nh, "apriltags_marker") {
-  // Do nothing if nobody subscribes
-  /*
-  ros::SubscriberStatusCallback connect_cb =
-      boost::bind(&DetectorNode::ConnectCb, this);
-  pub_apriltags_ = nh_.advertise<apriltag_ros::Apriltags>(
-      "apriltags", 1, connect_cb, connect_cb);
-  */
+
   if (!pnh.getParam("size", tag_size_)) {
     throw std::runtime_error("No tag size specified");
   }
-  tag_viz_.set_color(kr::rviz_helper::colors::RED);
-  tag_viz_.set_alpha(0.75);
+  tag_viz_.SetColor(apriltag_ros::RED);
+  tag_viz_.SetAlpha(0.75);
 }
 
 void DetectorNode::ConnectCb() {
@@ -51,21 +46,25 @@ void DetectorNode::ConnectCb() {
 
 void DetectorNode::CameraCb(const sensor_msgs::ImageConstPtr &image_msg,
                             const sensor_msgs::CameraInfoConstPtr &cinfo_msg) {
-  // Only show detection if camera is not calibrated
+  // Show only the detection if camera is uncalibrated
   if (cinfo_msg->K[0] == 0.0 || cinfo_msg->height == 0) {
     ROS_ERROR_THROTTLE(1, "%s: %s", nh_.getNamespace().c_str(),
-                       "camera not calibrate");
+                       "Camera not calibrated!");
     cam_calibrated_ = false;
   }
-
   // Retrieve camera info and image
   model_.fromCameraInfo(cinfo_msg);
-  cv::Mat image = cv_bridge::toCvCopy(
-                      image_msg, sensor_msgs::image_encodings::MONO8)->image;
 
-  // Disable drawing later
-  cv::Mat color;
-  cv::cvtColor(image, color, CV_GRAY2BGR);
+	cv_bridge::CvImagePtr cv_ptr;
+	try{
+		cv_ptr = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::BGR8);
+	}
+	catch (cv_bridge::Exception& e){
+		ROS_ERROR("cv_bridge exception: %s", e.what());
+		return;
+	}
+	cv::Mat image;
+	cv::cvtColor(cv_ptr->image, image, CV_BGR2GRAY);
 
   // Detect tags
   std::vector<AprilTags::TagDetection> detections =
@@ -80,15 +79,13 @@ void DetectorNode::CameraCb(const sensor_msgs::ImageConstPtr &image_msg,
     std::for_each(begin(detections), end(detections),
                   [&](const AprilTags::TagDetection &detection) {
       tags_c_msg.apriltags.push_back(DetectionToApriltagMsg(detection));
-      detection.draw(color);  // Disable drawing later
+      detection.draw(cv_ptr->image);
     });
+
     tag_viz_.PublishApriltagsMarker(tags_c_msg);
     pub_tags_.publish(tags_c_msg);
   }
-
-  // Display
-  cv::imshow("image", color);
-  cv::waitKey(1);
+	pub_detections_.publish(cv_ptr->toImageMsg());
 }
 
 Apriltag DetectorNode::DetectionToApriltagMsg(
@@ -101,7 +98,7 @@ Apriltag DetectorNode::DetectionToApriltagMsg(
   tag.center.x = detection.cxy.first;
   tag.center.y = detection.cxy.second;
   tag.size = tag_size_;
-  std::for_each(begin(detection.p), end(detection.p),
+  std::for_each(begin(detection.p), end(detection.p),   
                 [&](const AprilTags::Pointf &corner) {
     geometry_msgs::Point point;
     point.x = corner.first;
