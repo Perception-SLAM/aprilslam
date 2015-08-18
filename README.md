@@ -4,7 +4,7 @@ AprilSLAM is a package designed for fast camera pose estimation from a single or
 
 We use the awsome AprilTag implementation of M. Kaess for tag extraction [1,2]. GTSAM [3] is used for the mapping system.
 
-For a tutorial reference implementation onboard a vehicle please visit our PX4 Autopilot wiki page: 
+For a tutorial reference implementation onboard a vehicle please visit our PX4 Autopilot wiki page: https://pixhawk.org/dev/ros/apriltags
 
 The default AprilTag family used is 36h11 with a black border of 2. PDFs of pre-made tag-boards are available in the root of the repo for printing. 
 
@@ -40,6 +40,11 @@ rosdep install --from-paths src --ignore-src
 # compile pakcage
 catkin_make
 ```
+To run the full mapping and tag extraction system, first run your camera node (assumed to be /camera) and then :
+```
+roslaunch apriltag_ros slam.launch
+```
+RViz should show the detections overlayed on the image and pose of the camera in the world frame (origin at first detected tag)
 
 ## Tips/Problems
 
@@ -54,8 +59,3 @@ Please cite the appropriate papers when using this package or parts of it in an 
     1. Edwin Olson (2011). AprilTag: A robust and flexible visual fiducial system. Proceedings of the IEEE International Conference on Robotics and Automation (ICRA), pp. 3400–3407
     2. Michael Kaess. http://people.csail.mit.edu/kaess/apriltags/, Nov. 2013
     3. GTSAM. https://collab.cc.gatech.edu/borg/gtsam/
-
-
-## Videos
-
-[mapping](https://www.youtube.com/watch?v=MvLFmyHk4jE&list=UUISSElz91JM_B4ifoJ5MMXg)
