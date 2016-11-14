@@ -6,11 +6,11 @@ We use the awsome AprilTag implementation of M. Kaess for tag extraction [1,2]. 
 
 For a tutorial reference implementation onboard a vehicle please visit our PX4 Autopilot wiki page: https://pixhawk.org/dev/ros/apriltags
 
-The default AprilTag family used is 36h11 with a black border of 2. PDFs of pre-made tag-boards are available in the root of the repo for printing. 
+The default AprilTag family used is 36h11 with a black border of 2.
 
 Package originally developed by Chao Qu and Gareth Cross from Kumar Robotics (www.kumarrobotics.org). Currently developed and maintained by M.H.Kabir.
 
-_Note : The black border parameter and tag family is currently hardcoded to 2 and 36h11 respectively. If you want to use 'standard' 36h11 tags available elsewhere, you will need to modify the apriltag-mit library slightly to change the border._
+_Note : The black border parameter and tag family is currently hardcoded to 2 and 36h11 respectively. If you want to use 'standard' 36h11 tags available on the internet (e.g http://www.dotproduct3d.com/assets/pdf/apriltags.pdf), you will need to modify the apriltag-mit library slightly and change the border to 1._ : https://github.com/ProjectArtemis/aprilslam/blob/master/apriltag_mit/src/TagFamily.cc#L28
 
 ## Installation instructions -
 
